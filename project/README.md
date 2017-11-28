@@ -52,3 +52,20 @@ The picture below represents an ideal scenario. It can be seen that cliques, des
 -- Do people always choose the most cheap product among related products?
 -- Conversely, does the best product cost more than the others?
 -- Are the best products sold only by well-known brands?
+
+# Milestone 2 update (28/11/2017)
+### Research questions
+We performed exploratory analysis on the dataset to gain a better understanding of the research questions that we have posed in milestone 1. In particular:
+- Question 1: "Is our assumption founded?". With a reduced dataset, we analysed some cliques and we observed that the products are possibly competitive. Such observation lets us suggest that it is feasable to build a coherent graph, containing cluster of products with similar characteristics.
+- Question 2: "Given some products with similar characteristics and use cases, can we find the best one?". In order to answer this question, we first need to define some metrics to compare products. For each, the dataset provides information about the ranking and the sale rate, and in addition, we decided to further investigate other metrics, in particular the product *fan-in*. Being the products represented as nodes and the "buy after viewed" relations as edges, it can be assumed that a higher the number of entry edges implies that a product is more sold. This novel metrics could also be used to determine the best product among different cliques.
+- To answer question 3 and 4, more information still needs to be collected.
+
+### Accomplishments
+Regarding the intermediary goals defined in milestone 1, we achieved the following results:
+- To build links among products, the "also viewed" and "bought after viewing" relation can be used. We noticed that the former tend to produce too many links, which sometimes are not consistent; therefore, we adopted the latter to create our graph.
+- We developed an algorithm to exctract cliques from the datset. Since the nodes are mostly sparse, our solution can process thousands of products in reasonable time.
+
+### Further steps
+As a guideline until milestone 3, we aim to accomplish the following goals:
+- Investigate the clusters to gain useful insights, as definid in milestone 1. 
+- @todo: add more 
