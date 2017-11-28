@@ -56,16 +56,17 @@ The picture below represents an ideal scenario. It can be seen that cliques, des
 # Milestone 2 update (28/11/2017)
 ### Research questions
 We performed exploratory analysis on the dataset to gain a better understanding of the research questions that we have posed in milestone 1. In particular:
-- Question 1: "Is our assumption founded?". With a reduced dataset, we analysed some cliques and we observed that the products are possibly competitive. Such observation lets us suggest that it is feasable to build a coherent graph, containing cluster of products with similar characteristics.
-- Question 2: "Given some products with similar characteristics and use cases, can we find the best one?". In order to answer this question, we first need to define some metrics to compare products. For each, the dataset provides information about the ranking and the sale rate, and in addition, we decided to further investigate other metrics, in particular the product *fan-in*. Being the products represented as nodes and the "buy after viewed" relations as edges, it can be assumed that a higher the number of entry edges implies that a product is more sold. This novel metrics could also be used to determine the best product among different cliques.
-- To answer question 3 and 4, more information still needs to be collected.
+- Question 1: "Is our assumption founded?" On some selected categories, we analysed some cliques and observed that the products seem to be related. Such observation lets us suggest that it is feasable to build a coherent graph, containing cluster of products with similar characteristics.
+- Question 2: "Given some products with similar characteristics and use cases, can we find the best one?". In order to answer this question, we first need to define some metrics to compare products. For each product, the dataset provides information about the sales ranking and the ratings. In addition, we decided to further investigate other metrics, in particular the *fan-in* of a product (the number of ingoing edges). Being the products represented as nodes and the "buy after viewed" relations as edges, it can be assumed that a higher the number of ingoing edges implies that a product is preferred to others. This novel metric could also be used to determine the best product among different cliques.
 
 ### Accomplishments
 Regarding the intermediary goals defined in milestone 1, we achieved the following results:
-- To build links among products, the "also viewed" and "bought after viewing" relation can be used. We noticed that the former tend to produce too many links, which sometimes are not consistent; therefore, we adopted the latter to create our graph.
-- We developed an algorithm to exctract cliques from the datset. Since the nodes are mostly sparse, our solution can process thousands of products in reasonable time.
+- We built a functioning pipepline for processing the dataset in an efficient way, based on Spark.
+- To build links among products, the "also viewed" and "bought after viewing" relation can be used. We noticed that the former tend to produce too many links, which sometimes are not consistent; therefore, we adopted the latter to create our graph. The "bought together" relation proved effective in refining the graph by removing unnecessary edges.
+- We developed an algorithm to exctract cliques from the datset. Since the graph is sparse and the categories are divided in a clever way, our solution can process the full dataset in reasonable time, despite the problem being NP-Complete.
 
 ### Further steps
 As a guideline until milestone 3, we aim to accomplish the following goals:
-- Investigate the clusters to gain useful insights, as definid in milestone 1. 
-- @todo: add more 
+- Investigate the cliques to gain useful insights, as defined in milestone 1. In particular, we want to extract recurrent patterns from the graph.
+- Obtain the best metric for evaluating a product, among average rating, sales rank, ingoing edges, or other potential metrics that we might discover in the future.
+- Now that we have the pipeline in place, try to answer the open questions in the initial proposal.
