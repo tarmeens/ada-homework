@@ -64,7 +64,7 @@ class ProductGraph:
     
     def drop_singletons(self):
         """
-        Returns a new graph with no singletons (nodes without in/out edges).
+        Returns a new graph with no singletons (isolated nodes without in/out edges).
         """
         mask = (np.array(self.get_fan_in()) > 0) | (np.array(self.get_fan_out()) > 0)
         valid_records = []
@@ -92,6 +92,9 @@ class ProductGraph:
         return count
     
     def extract_max_cliques(self):
+        """
+        Extracts all max-cliques from this graph, and returns them as a list of lists of indices.
+        """
         self.cliques = []
         self.prev_list = []
         self._extract_max_cliques(range(len(self.adj_list)))
@@ -132,6 +135,10 @@ class ProductGraph:
 
     # Kosaraju's algorithm
     def get_connected_components(self, directed):
+        """
+        Computes the strongly connected components in this graph, and returns a list that
+        represents the component label for each node.
+        """
         # First DFS pass
         self.L = []
         self.visited = np.zeros(len(self.adj_list)).astype(bool)
@@ -145,4 +152,15 @@ class ProductGraph:
 
         return self._remap(self.components)
 
+    def extract_connected_components(self, directed):
+        """
+        Returns the strongly connected components in this graph as a list of lists of indices.
+        """
+        comps = self.get_connected_components(directed)
+        comp_list = {}
+        for i, comp in enumerate(comps):
+            if comp not in comp_list:
+                comp_list[comp] = []
+            comp_list[comp].append(i)
+        return list(comp_list.values())
     
