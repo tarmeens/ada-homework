@@ -19,6 +19,7 @@
 \usepackage{times}
 \usepackage{url}
 \usepackage{latexsym}
+\usepackage{todonotes}
 
 %\setlength\titlebox{5cm}
 
@@ -28,7 +29,7 @@
 % in the camera-ready version and ask you to change it back.
 
 
-\title{Name of your project}
+\title{Gaining insight into the Amazon product network (temporary title)}
 
 \author{First Author \\
   {\tt email@domain} \\\And
@@ -42,9 +43,64 @@ Third Author \\
 \begin{document}
 \maketitle
 \begin{abstract}
-  This document contains the instructions for preparing a report for ADA 2017. The document itself conforms to its own specifications, and is therefore an example of
-  what your manuscript should look like. This document is based on the ACL 2014 paper format.
+\todo{NB: this abstract is just a pure example}
+This project aims to find unobserved patterns and insights within a dataset of products on the Amazon website. To conduct our research, we devised an algorithm that builds a graph of such products, where articles with similar characteristics and features are clustered in an innovative manner. According to our experiments, these clusters are proven more accurate than the standard Amazon category aggregations, which are human-made and therefore prone to errors. In addition, biases in brands and descriptions are emphasised.
+
 \end{abstract}
+
+\section{Introduction}
+\todo[inline]{The introduction should contain: 1 general (and not too technical) description of what we are doing (backgroud, justification), 2 related work and challenges, 3 focus of the project or added value, 4 outline of the report structure}
+Buying from huge e-commerce websites such as \emph{Amazon} has many advantages, but paradoxically, users are often confused by the vast variety of products. Users may have a rough idea about the characteristics of the product they want to buy, and they often undergo the same process of comparing similar products. We aim to remove this redundancy and aid them in their purchases, suggesting the best or most popular products that correspond to their search. For instance, comparing smartphones or laptops may be difficult due to the wide price range and the required technical knowledge. \\ 
+We also aim to identify patterns in the products. Do brands affect popularity and price of a product? Is it possible to identify the best producs among similar ones? 
+
+
+\section{Dataset structure}
+We have been provided with a dataset of Amazon products, along with their reviews. In particular, the dataset consists of two JSON files: \textit{metadata}, which contains information about the products, and \textit{reviews}, which contains reviews and ratings associated to each product.
+\subsection{Metadata}
+The file contains information about the products, such as their unique ID, description and price. The size of the file is 9.81 GB (uncompressed, json format).
+\todo[inline]{List the field of the dataset?}
+\subsection{Reviews}
+The file contains reviews and ratings associated with each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed, json format). 
+\todo[inline]{List the field of the dataset?}
+
+\section{Implementation details}
+The dataset, due to its large size, could be not processed directly using Pandas. The initial data processing was performed using PySpark, both on the cluster (especially for the reviews dataset) and in local. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
+\todo[inline]{add merge of the datasets}
+\todo[inline]{Mention the reduced dataset?}
+
+\section{Exploratory data analysis}
+\todo[inline]{categories, missing data, feature distribution and correlation}
+The analyses have been performed on the 25\% of the \todo{reduced} dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics.
+\subsection{Missing data}
+\todo[inline]{put a picture}
+From Picture ..., we can observe that results significantly varies among the dataset fields. ID (\textit{asin}) and categories are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{SaleRank} and \textit{Brand} are missing in about 60\% of cases. Other fields are in most cases present in the dataset, with a missing ratio lower than 30\%.
+\subsection{Feature distribution}
+\todo[inline]{put a picture}
+Picture .. shows useful insights on the data.  It can be seen that the average ratings tend to be high. The distribution of the number of reviews for each article is heavy-tailed (the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
+\subsection{Correlation analysis}
+\todo[inline]{put a picture}
+We have investigated correlations among price, review rating and sales rank. The analysis has been performed on whole subset dataset, without exterminating the single categories independently. 
+From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have on average higher ratings.
+As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
+\todo[inline]{The analysis should be redone in the cliques}
+\section{Methodology}
+\todo[inline]{This should be the core part of the project. Why have we decided to cluster the products with our algorithm? How do we do it? Explain in details how links are created, and what solutions we have tried. Mention how the algorithm works and its complexity. }
+In order to analyse patterns and gain insights in the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}.
+\subsection{Graph product}
+The dataset is transformed into a graph of relations between products, where the vertices represent products, and edges represent competitions between products. In details: we add an edge from product A to product B if clients buy B after viewing A (direct competition), and
+we remove an edge between A and B if A and B are frequently bought together (no competition). A way of expressing this in more formal terms is with max-cliques, that is, finding sets of vertices that are totally interconnected.
+The algorithms that we are going to use (e.g. max-cliques) are NP-Complete, and will surely benefit from a clever splitting of the data.
+As a first pre-processing step, we build our graph data structure using an efficient layout: adjacency lists indexed by numbers, and not strings. This representation is suitable because the graph is sparse.
+In previous experiments, we tried to employ the also viewed relation, with mixed results. This relation produces a graph that is too dense to give meaningful results. Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and does not actually represent a graph relation.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% report ends here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%  original document starts here %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \section{Credits}
 
