@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import bisect
 
 class ProductGraph:
@@ -20,19 +21,13 @@ class ProductGraph:
         
         for record in records:
             # Add edge on given key (e.g. buy after viewing)
-            if 'related' in record and add_edge_on in record['related']:
-                av = record['related'][add_edge_on]
-            else:
-                av = []
+            av = record[add_edge_on]
             av = list(filter(lambda x: x in self.name_id_mapping, av))
             self.adj_list.append(sorted(set([self.name_id_mapping[x] for x in av])))
 
             # Remove edge on given key (e.g. bought together), if added earlier
             if remove_edge_on is not None:
-                if 'related' in record and remove_edge_on in record['related']:
-                    bt = record['related'][remove_edge_on]
-                else:
-                    bt = []
+                bt = record[remove_edge_on]
                 bt = list(filter(lambda x: x in self.name_id_mapping, bt))
                 bt = [self.name_id_mapping[x] for x in bt]
                 for o in bt:
@@ -49,6 +44,34 @@ class ProductGraph:
         for i, adj in enumerate(self.adj_list):
             for node in adj:
                 self.adj_list_incoming[node].append(i)
+        
+        # Enrich records with new fields (fan-in, fan-out, connected components)
+        for i, fan_in in enumerate(self.get_fan_in()):
+            self.records[i]['fan_in'] = fan_in
+            
+        for i, fan_out in enumerate(self.get_fan_out()):
+            self.records[i]['fan_out'] = fan_out
+        
+        for i, comp_id in enumerate(self.get_connected_components(directed=True)):
+            self.records[i]['comp_id_dir'] = comp_id
+            
+        for i, comp_id in enumerate(self.get_connected_components(directed=False)):
+            self.records[i]['comp_id_undir'] = comp_id
+            
+        conn_comps = self.extract_connected_components(directed=True)
+        for comp in conn_comps:
+            size = len(comp)
+            for i in comp:
+                self.records[i]['comp_size_dir'] = size
+                
+        conn_comps = self.extract_connected_components(directed=False)
+        for comp in conn_comps:
+            size = len(comp)
+            for i in comp:
+                self.records[i]['comp_size_undir'] = size
+                
+        # Build pandas dataframe out of this graph
+        self.df = pd.DataFrame(self.records)
                 
     def get_fan_in(self):
         """
