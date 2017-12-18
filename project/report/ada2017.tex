@@ -55,24 +55,23 @@ We also aim to identify patterns in the products. Do brands affect popularity an
 
 
 \section{Dataset structure}
-We have been provided with a dataset of Amazon products. In particular, the dataset consists of two JSON files: \textit{metadata}, which contains information related to the products, and \textit{reviews}, which contains the reviews and the ratings associated to each product.
+We have been provided with a dataset of Amazon products. In particular, the dataset consists of two JSON files: 
+\begin{itemize}
+	\item \textit{metadata}: which contains information related to the products. The file contains information about the products, such as their unique ID, description, price and the asin of related products. The size of the file is 9.81 GB (uncompressed, json format).
+	\item \textit{reviews}: which contains the reviews and the ratings associated to each product. The file contains reviews and ratings associated with each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed, json format).
+\end{itemize}
 \subsection{Metadata}
-The file contains information about the products, such as their unique ID, description, price and the asin of related products. The size of the file is 9.81 GB (uncompressed, json format).
-\todo[inline]{List the field of the dataset?}
-\subsection{Reviews}
-The file contains reviews and ratings associated with each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed, json format). 
-\todo[inline]{List the field of the dataset?}
 
-\section{Implementation details}
-The dataset, due to its large size, could not be easily managed directly using Pandas. Therefore, it has been initially processed using PySpark, both on the cluster (especially for the reviews dataset) and locally. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
-\todo[inline]{add merge of the datasets}
-\todo[inline]{Mention the reduced dataset?}
+\section{Dataset preprocessing}
+The dataset, due to its large size, could not be easily managed directly using Pandas. Therefore, it has been processed using PySpark, first on the cluster (especially for the reviews dataset) and then locally. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
+\todo[inline]{merge reviews with metadata}
+\todo[inline]{5 categories selction}
 
 \section{Exploratory data analysis}
 \todo[inline]{categories, missing data, feature distribution and correlation}
 The analyses have been performed on the 25\% of the \todo{reduced} dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics.
 \subsection{Missing data}
-\todo[inline]{put a picture}
+\todo[inline]{put pictures}
 From Picture ..., we can observe that results significantly varies among the dataset fields. ID (\textit{asin}) and categories are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{SaleRank} and \textit{Brand} are missing in about 60\% of cases. Other fields are in most cases present in the dataset, with a missing ratio lower than 30\%.
 \subsection{Feature distribution}
 \todo[inline]{put a picture}
@@ -83,16 +82,45 @@ We have investigated correlations among price, review rating and sales rank. The
 From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
 \todo[inline]{The analysis should be redone in the cliques}
-\section{Methodology}
-\todo[inline]{This should be the core part of the project. Why have we decided to cluster the products with our algorithm? How do we do it? Explain in details how links are created, and what solutions we have tried. Mention how the algorithm works and its complexity. Validate the result, prove that cliques effectlively represent competitive products }
+
+\section{Graph analysis}
+\todo[inline]{This should be the core part of the project. Why have we decided to cluster the products with our algorithm? How do we do it? Explain in details how links are created, and what solutions we have tried. Mention how the algorithm works and its complexity. Validate the result, prove that cliques effectlively represent competitive products. Correct assumption: sparse graph.}
 In order to analyse patterns and gain insights in the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}, but without using directly any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to numerically compare two products to decide which one is better. We understood that before being able to comparing two products we had to cluster them in competing products as it would not make sense to compare two products with very different characteristics, for example, a cheap phone with a very expensive one. 
-\subsection{Graph product}
+\subsection{Graph structure}
 The dataset is transformed into a graph of relations between products, where the vertices represent products, and edges represent competitions between products. In details: we add an edge from product A to product B if clients buy B after viewing A (direct competition), and
 we remove an edge between A and B if A and B are frequently bought together (no competition). A way of expressing this in more formal terms is with max-cliques, that is, finding sets of vertices that are totally interconnected.
+\todo{augmentation with fan-in/out, connected components}
+\todo{we did not used "also viewed"}
+\todo{cartsimilarities}
 The algorithms that we are going to use (e.g. max-cliques) are NP-Complete, and will surely benefit from a clever splitting of the data.
 As a first pre-processing step, we build our graph data structure using an efficient layout: adjacency lists indexed by numbers, and not strings. This representation is suitable because the graph is sparse.
 In previous experiments, we tried to employ the also viewed relation, with mixed results. This relation produces a graph that is too dense to give meaningful results. Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and does not actually represent a graph relation.
 
+\subsection{Graph insights}
+\todo{stats (lot unconnected components, correlations)}
+\todo{patterns (accumulators, cliques=competing products)}
+\todo{Wrong categories}
+
+\subsection{Methodology}
+\todo{why fan-in? it is more constant in time! salesrank is not. arguments in favor of fan-in ... e.g. it correlates with sales rank}
+\todo{best product=product with highest fan-in. Based on the direction of the edge we can predict which is the one with the highest fan-in}
+
+\subsection{Predicting the best products}
+\todo{machine learning for predicting the best product (highest fan-in) from text, price, #reviews, average rating}
+\todo{results on non-competing products (outside the cliques)}
+\todo{results on competing products (inside the cliques), as expected, are worse}
+
+\subsection{Bias in brands}
+\todo{herding effect with number of reviews}
+
+\section{Conclusion}
+
+\todo{figures: 
+rating distribution, 
+correlations (between price, rating, salesrank,...) and with fan-in?, 
+graph (cliques and accumulators),
+decision boundaries classifier,
+pairwise comparison/correlation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% report ends here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
