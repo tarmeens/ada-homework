@@ -31,12 +31,12 @@
 
 \title{Gaining insight into the Amazon product network (temporary title)}
 
-\author{First Author \\
-  {\tt email@domain} \\\And
+\author{Dario Pavllo \\
+  {\tt dario.pavllo@epfl.ch} \\\And
   Second Author \\
-  {\tt email@domain} \\\And
+  {\tt mattia.artinelli@epfl.ch} \\\And
 Third Author \\
-{\tt email@domain} \\}
+{\tt niccolo.sacchi@epfl.ch} \\}
 
 \date{}
 
@@ -55,16 +55,16 @@ We also aim to identify patterns in the products. Do brands affect popularity an
 
 
 \section{Dataset structure}
-We have been provided with a dataset of Amazon products, along with their reviews. In particular, the dataset consists of two JSON files: \textit{metadata}, which contains information about the products, and \textit{reviews}, which contains reviews and ratings associated to each product.
+We have been provided with a dataset of Amazon products. In particular, the dataset consists of two JSON files: \textit{metadata}, which contains information related to the products, and \textit{reviews}, which contains the reviews and the ratings associated to each product.
 \subsection{Metadata}
-The file contains information about the products, such as their unique ID, description and price. The size of the file is 9.81 GB (uncompressed, json format).
+The file contains information about the products, such as their unique ID, description, price and the asin of related products. The size of the file is 9.81 GB (uncompressed, json format).
 \todo[inline]{List the field of the dataset?}
 \subsection{Reviews}
 The file contains reviews and ratings associated with each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed, json format). 
 \todo[inline]{List the field of the dataset?}
 
 \section{Implementation details}
-The dataset, due to its large size, could be not processed directly using Pandas. The initial data processing was performed using PySpark, both on the cluster (especially for the reviews dataset) and in local. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
+The dataset, due to its large size, could not be easily managed directly using Pandas. Therefore, it has been initially processed using PySpark, both on the cluster (especially for the reviews dataset) and locally. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
 \todo[inline]{add merge of the datasets}
 \todo[inline]{Mention the reduced dataset?}
 
@@ -80,12 +80,12 @@ Picture .. shows useful insights on the data.  It can be seen that the average r
 \subsection{Correlation analysis}
 \todo[inline]{put a picture}
 We have investigated correlations among price, review rating and sales rank. The analysis has been performed on whole subset dataset, without exterminating the single categories independently. 
-From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have on average higher ratings.
+From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
 \todo[inline]{The analysis should be redone in the cliques}
 \section{Methodology}
 \todo[inline]{This should be the core part of the project. Why have we decided to cluster the products with our algorithm? How do we do it? Explain in details how links are created, and what solutions we have tried. Mention how the algorithm works and its complexity. Validate the result, prove that cliques effectlively represent competitive products }
-In order to analyse patterns and gain insights in the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}.
+In order to analyse patterns and gain insights in the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}, but without using directly any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to numerically compare two products to decide which one is better. We understood that before being able to comparing two products we had to cluster them in competing products as it would not make sense to compare two products with very different characteristics, for example, a cheap phone with a very expensive one. 
 \subsection{Graph product}
 The dataset is transformed into a graph of relations between products, where the vertices represent products, and edges represent competitions between products. In details: we add an edge from product A to product B if clients buy B after viewing A (direct competition), and
 we remove an edge between A and B if A and B are frequently bought together (no competition). A way of expressing this in more formal terms is with max-cliques, that is, finding sets of vertices that are totally interconnected.
