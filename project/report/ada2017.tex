@@ -72,20 +72,18 @@ We noticed that products were distributed over a wide set of categories, therefo
 
 \section{Exploratory data analysis}
 \label{sec:explodatanalysis}
-We investigated what fields could exploited, analysing missing data, feature distributions and correlations.
+We investigated what fields could exploited, analysing missing data, feature distribution and correlations.
 \subsection{Missing data}
 We observed that the quantity of missing entries significantly varies among the dataset fields. \textit{ASIN} and \textit{category} are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{sales rank} and \textit{brand} are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
-\subsection{Feature distribution}
+\subsection{Feature analysis}
 \begin{figure}[h]
 	\centering{}
 	\includegraphics[width=0.47\textwidth]{img/avgReviews.png}
 	\caption{Distribution of the \textit{average rating} field.}
 	\label{fig:avgdist}
 \end{figure}
-\Cref{fig:avgdist} shows that ratings tend to be high. This evidence suggests that they may be not a good metric to evaluate the popularity of a product. The distribution of the number of reviews for each article is heavy-tailed (i.e. the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
-\subsection{Correlation analysis}
-We have investigated correlations among price, average rating and Sales rank. The analysis has been performed on whole dataset and not on the single categories independently. 
-From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
+\Cref{fig:avgdist} shows that ratings tend to be high. This evidence suggests that they may be not a good metric to evaluate the popularity of a product.
+We have investigated correlations among \textit{price}, \textit{average rating} and \textit{sales rank}, but their coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
 
 \section{Graph analysis}
