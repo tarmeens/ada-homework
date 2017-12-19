@@ -133,7 +133,9 @@ To get an idea of their impact, we select the top 1000 features (i.e. words) in 
 While this process might seem convoluted, it is the result of many experiments. Initially, we tried to use L1-regularized logistic regression instead of random forests, which is expected to select only a few features (thanks to its sparsity property). Indeed, out of the thousands of features, only a few of them are selected. However, the model tends to overfit some features (e.g. the name of the model of a particular product, such as GT-I9500) in order to maximize the score, and these features are given a huge weight. As a result, it becomes impossible to interpret the model, as the useful features are buried by outliers.
 On the other hand, random forests average the results of many weaks predictors, and are less susceptible to this kind of overfitting. Therefore, our idea is to use random forests to perform feature selection, and interpret the useful features using logistic regression.
 
-We found out that certain words tend to make a product desirable: colors (e.g. black, white), features (e.g. GPS, Bluetooth, LTE, camera), and brand names (e.g. Apple).
+We found out that certain words tend to make a product desirable: colors (e.g. black, white), features (e.g. GPS, Bluetooth, LTE, camera), and some brand names (e.g. Apple).
+
+Finally, we carried out the same analysis using numeric features. We tried to predict the best product using the \emph{number of reviews} and \emph{average rating} as features. Surprisingly, we discovered that people tend to choose a product according to the number of reviews, and the role of the actual rating is marginal (unless there is a big discrepancy between the ratings of the two products). We believe that the distribution of the average rating (which concentrates on 4-5 stars for the majority of products) plays an important role.
 
 
 \subsection{Bias in brands}
