@@ -51,24 +51,24 @@ class ProductGraph:
             
         for i, fan_out in enumerate(self.get_fan_out()):
             self.records[i]['fan_out'] = fan_out
-#        
-#        for i, comp_id in enumerate(self.get_connected_components(directed=True)):
-#            self.records[i]['comp_id_dir'] = comp_id
-#            
-#        for i, comp_id in enumerate(self.get_connected_components(directed=False)):
-#            self.records[i]['comp_id_undir'] = comp_id
-#            
-#        conn_comps = self.extract_connected_components(directed=True)
-#        for comp in conn_comps:
-#            size = len(comp)
-#            for i in comp:
-#                self.records[i]['comp_size_dir'] = size
-#                
-#        conn_comps = self.extract_connected_components(directed=False)
-#        for comp in conn_comps:
-#            size = len(comp)
-#            for i in comp:
-#                self.records[i]['comp_size_undir'] = size
+        
+        for i, comp_id in enumerate(self.get_connected_components(directed=True)):
+            self.records[i]['comp_id_dir'] = comp_id
+            
+        for i, comp_id in enumerate(self.get_connected_components(directed=False)):
+            self.records[i]['comp_id_undir'] = comp_id
+            
+        conn_comps = self.extract_connected_components(directed=True)
+        for comp in conn_comps:
+            size = len(comp)
+            for i in comp:
+                self.records[i]['comp_size_dir'] = size
+                
+        conn_comps = self.extract_connected_components(directed=False)
+        for comp in conn_comps:
+            size = len(comp)
+            for i in comp:
+                self.records[i]['comp_size_undir'] = size
                 
         # Build pandas dataframe out of this graph
         self.df = pd.DataFrame(self.records)
