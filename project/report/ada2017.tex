@@ -44,7 +44,6 @@ Third Author \\
 \begin{document}
 \maketitle
 \begin{abstract}
-\todo{NB: this abstract is just a pure example}
 This project aims to find unobserved patterns and insights within the large offer of products on the Amazon website. To conduct our research, we devised an algorithm that builds a graph of such products, where articles with similar characteristics are clustered in an innovative manner. According to our research, these clusters are proven more accurate than the standard Amazon category aggregations, which are human-made and therefore prone to errors. In addition, biases in brands and descriptions are emphasised.
 
 \end{abstract}
@@ -59,13 +58,13 @@ The rest of the report is organised as follows: \Cref{sec:datastruct} briefly ex
 \label{sec:datastruct}
 We have been provided with a dataset of Amazon products, which consists of two JSON files: 
 \begin{itemize}
-	\item \textit{metadata}: contains information related to the products, such as their unique ID (\textit{ASIN}), category, description, \textit{Sales rank}\todo{reference?}, brand, price, and relations with other items. Such relations, which are of fundamental importance for building our graph, indicate how items are bought and visualized together. The size of the file is 9.81 GB (uncompressed).
+	\item \textit{metadata}: contains information related to the products, such as their unique ID (\textit{ASIN}), category, description, \textit{sales rank}, brand, price, and relations with other items. Such relations, which are of fundamental importance for building our graph, indicate how items are bought and visualized together. The size of the file is 9.81 GB (uncompressed).
 	\item \textit{reviews}: contains ratings and reviews associated to each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed).
 \end{itemize}
 
 \section{Dataset preprocessing}
 \label{sec:datapreprocessing}
-The dataset, due to its large size, could not be handled directly using Pandas. It has been processed using PySpark, first on the cluster (especially for \textit{reviews}) and then locally. While it may seem inappropriate at first, using Spark in local mode is indicated for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores and spills to disk intermediate results that cannot fit in main memory. \todo{ reference?}
+The dataset, due to its large size, could not be handled directly using Pandas. It has been processed using PySpark, first on the cluster (especially for \textit{reviews}) and then locally. While it may seem inappropriate at first, using Spark in local mode is indicated for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores and spills to disk intermediate results that cannot fit in main memory. 
 
 Since the text content of \textit{reviews} was not necessary for our  analysis, for each product, we extracted average rating, number of reviews, and their \textit{helpfulness} score. These fields have been then merged with \textit{metadata}.
 
@@ -73,66 +72,69 @@ We noticed that products were distributed over a wide set of categories, therefo
 
 \section{Exploratory data analysis}
 \label{sec:explodatanalysis}
-We investigated what fields could be useful for our project, analysing missing data, feature distribution and correlations.
-The analyses have been performed on the 25\% of the dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics. \todo{remove}
+We investigated what fields could exploited, analysing missing data, feature distribution and correlations.
 \subsection{Missing data}
-\todo[inline]{put pictures}
-From Picture ..., we can observe that the quantity of missing entries significantly varies among the dataset fields. ASIN and category are always present by definition. In addition, almost all articles have at least one review. On the other hand, Sale rank and brand are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
-\subsection{Feature distribution}
-\todo[inline]{put a picture}
-Picture .. shows useful insights on the data.  It can be seen that the average rating tends to be high. The distribution of the number of reviews for each article is heavy-tailed (i.e. the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
-\subsection{Correlation analysis}
-\todo[inline]{put a picture}
-We have investigated correlations among price, average rating and Sales rank. The analysis has been performed on whole dataset and not on the single categories independently. 
-From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
+We observed that the quantity of missing entries significantly varies among the dataset fields. \textit{ASIN} and \textit{category} are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{sales rank} and \textit{brand} are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
+\subsection{Feature analysis}
+\begin{figure}[h]
+	\centering{}
+	\includegraphics[width=0.47\textwidth]{img/avgReviews.png}
+	\caption{Distribution of the \textit{average rating} field.}
+	\label{fig:avgdist}
+\end{figure}
+\Cref{fig:avgdist} shows that ratings tend to be high. This evidence suggests that they may be not a good metric to evaluate the popularity of a product.
+We have investigated correlations among \textit{price}, \textit{average rating} and \textit{sales rank}, but their coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
 
 \section{Graph analysis}
 \label{sec:graphanalysis}
-In order to analyse patterns and gain insights into the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}; however, without using directly any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to numerically compare two products to decide which one is better. \todo{revise} We understood that before being able to compare two products, we had to cluster them in comparable products, as it would be meaningless to compare two products with very different characteristics (e.g. a cheap phone with a very expensive one). 
+In order to analyse patterns and gain insights into the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}, without using any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to compare two products to decide which one is better. \todo{revise} We understood that before being able to compare two products, we had to cluster them in comparable products, as it would be meaningless to compare two products with very different characteristics (e.g. a cheap phone with a very expensive one). 
 
-The algorithm builds a network of products using the relations between items provided in the dataset. In general terms, such relations have been collected by analysing the behaviour of Amazon's users, i.e. what products they buy or visualise together. We assumed that these relations could reflect meaningful patterns, as users tend to compare similar or related products.
+The algorithm builds a network of products using the relations between items provided in the dataset. In general terms, such relations have been collected by analysing the behaviour of Amazon's users, i.e. what products they buy or visualise together. We assume that these relations could reflect meaningful patterns, as users tend to compare similar or related products.
 
 \subsection{Graph structure}
-The dataset has been transformed into graphs of relations between products, where vertices represent products, and edges represent competitions between products. To assure a coherent result and facilitate the computation, a graph includes only products of the same category. In details, we built the graph such that an edge from product A to product B is added if clients \textbf{buy} B after viewing A (\textit{buy after viewing} relation), but the edge between A and B is removed if A and B are frequently bought together (\textit{bought together} relation). The former means direct competition, i.e. an article has been preferred over another, while the latter means no competition, i.e. the two articles are complementary (e.g. a cellphone and a cover).
+The dataset has been transformed into graphs of relations between products, where vertices represent products, and edges represent competitions between products. To ensure a coherent result and facilitate the computation, a graph includes only products of the same category. In details, we built the graph such that an edge from product A to product B is added if clients \textbf{buy} B after viewing A (\textit{buy after viewing} relation), but the edge between A and B is removed if A and B are frequently bought together (\textit{bought together} relation). The former means direct competition, i.e. an article has been preferred over another, while the latter means no competition, i.e. the two articles are complementary (e.g. a cellphone and a cover).
 
-In previous experiments, we tried to build the graph by adding edges between products that are viewed together (\textit{also viewed} relation). This relation does not imply that any of the products has been actually bought, and it is produces a graph that is too dense to give meaningful results. Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and it does not actually represent a graph relation. \todo{quote needed}
+In previous experiments, we tried to build the graph by adding edges between products that are viewed together (\textit{also viewed} relation). This relation does not imply that any of the products has been actually bought, and it produces a graph that is too dense to give meaningful results. %Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and it does not actually represent a graph relation. \todo{quote needed}
 
-We could verify that the graph is sparse, which was also an important assumption. As a matter of fact, a fully connected graph would have produced spurious results that could be difficult to interpret. In addition, our analysis algorithms significantly benefit from a sparse graph, since they are NP-Complete. \todo{revise complexity}
+We verified our assumption that the graph is sparse. As a matter of fact, a fully connected graph would have produced spurious results that would have been difficult to interpret. In addition, our analysis algorithms significantly benefit from a sparse graph, since some of them are NP-Complete.
 
-We used the graph to analyse connected components, in particular max-cliques.
-A max-clique is a set of totally interconnected nodes, which, in our scenario, represent products that are in direct competition among each other (and it is not really clear which one "wins"). Note that these competition relations might even comprehend products of the same brand: this could turn out to be an interesting tools for vendors.
-\todo[inline]{should cliques and algorithm deserve more space here?}
-\todo{connected components @ dario}
-\todo{cartsimilarities @dario}
+%\todo[inline]{should cliques and algorithm deserve more space here?}
+%\todo{connected components @ dario}
+%\todo{cartsimilarities @dario}
 
 
 \subsection{Graph insights}
 \todo[inline]{patterns (accumulators, cliques=competing products), prove that cliques represent competing products}
 \todo[inline]{What do cliques represent? some of them are just same product with different colours, or same brand in clique}
-We could observe that the graph is weakly connected. Most of the components have no relation among each other, and the average size of a component is small. The most important connected components are cliques, and we investigated if they effectively generated clusters of competing products. To validate our clusters, we have run the Boyer-Moore majority vote algorithm to prove that products in cliques belong to the same sub-category. \todo{check the price for validation?} As a result, we found that products are often incorrectly assigned to their category.
+By visually inspecting the graph, we identified some common structures.
+\begin{itemize}
+	\item \textbf{Accumulators:} these are popular products that have many incoming edges.
+	\item \textbf{Max-cliques:} groups of products that are totally interconnected. In many cases, these products are also accumulators. Cliques represent products that are in direct competition among each other (and it is not really clear which one ``wins"). Note that these competition relations might even comprehend products of the same brand.
+\end{itemize}
+We wrote algorithms for automatically extracting these patterns and analyzed them to make sure that they were coherent. In particular, for max-cliques, we ran the extraction algorithm on the full graph and verified whether all the products in a clique belong to the same category. This is true in 70\% of cases. Afterwards, we repeated the analysis on strongly connected components and discovered that many products are assigned to the wrong category in a detectable way. We also analyzed some cliques by hand and observed some recurrent patterns: in some cases, they contain the same product in different variations (e.g. color); in other cases, they represent different products from the same manufacturer, and, finally, they can also contain different products from different manufacturers. Since the data appeared to be very consistent, we decided to adopt it without further cleaning.
 
 \subsection{Methodology}
-Now that products are represented as nodes of a directed graph, a new feature becomes available: the product \textit{fan-in}, that is, how many incoming edges are associated to each node. Since an incoming edge indicates that a product has been preferred over another one, such new feature could be exploited to measure the popularity of a product. To prove it, we investigated correlations between fan-in and other features already included in the dataset, such as Sales rank, average rating, and number of reviews. 
+Now that products are represented as nodes of a directed graph, a new feature becomes available: the product \emph{fan-in} (or \emph{in-degree}), which represents the number of incoming edges in a node. Since an incoming edge indicates that a product has been preferred over another one, such a feature could be exploited to measure the popularity of a product. To validate this metric, we investigated correlations between fan-in and other features already included in the dataset, such as sales rank, average rating, and number of reviews.
 \begin{figure}
 	\centering{}
 	\includegraphics[width=0.5\textwidth]{img/faninCorr.png}
 	\caption{Correlations between metrics.}
 	\label{fig:faninCorr}
 \end{figure}
-As showed in \Cref{fig:faninCorr}, the fan-in has a moderate correlation with the number of reviews, and a weak correlation with the Sales rank. We also observed a weak correlation between the Sales rank and the price, which makes us suppose that people tend to prefer cheaper products. We can conclude that fan-in could be effectively used to measure the \textit{preference} of a product, i.e. how much the product is favoured over the others. In addition, fan-in shows several advantages over the other features. As mentioned in \Cref{sec:explodatanalysis}, Sales rank is present only in 60\% of the products. Moreover, it has a coarse granularity (i.e. it is computed almost only on macro-category), and it continuously evolves over time. \todo{quote needed}
+As showed in \Cref{fig:faninCorr}, the fan-in has a moderate correlation with the number of reviews, and a weak correlation with the sales rank. We also observed a weak correlation between the sales rank and the price, which makes us suppose that people tend to prefer cheaper products. We can conclude that fan-in could be effectively used to measure the \textit{preference} of a product, i.e. how much the product is favoured over the others. In addition, the fan-in shows several advantages over the other features. As mentioned in \Cref{sec:explodatanalysis}, Sales rank is present only in 60\% of the products. Moreover, it has a coarse granularity (i.e. it is computed almost only on macro-category), and it continuously evolves over time (which adds noise to the data). \todo{quote needed}
 
 \subsection{Predicting the best products}
-We investigated how people decide what product is the best, analysing both textual and numerical features. In more formal terms, given two related products (e.g. the products in a cliques or in a graph relation), we predict the preferred one (i.e. the one with the highest fan-in) with of a binary classifier. In the \textit{learning to rank} context, such approach is known as the \textit{pairwise approach} \cite{Li:11}.
-Textual features are extracted from the titles (with tf-idf vectorizer), as it represents a direct description of the product.
-We subtract the feature vectors of the two products to produce the feature vector to supply to the classifier. As for the ground truth, provided that the subtraction is  A−BA−B , we put the label 0 if the winner is A, and 1 if the winner is B. For each sample, we also provide the opposite sample ( B−AB−A  with the inverted label), so that the classifier learns the commutative property and the classes are perfectly balanced.
-We train a random forest on our data, with a fixed number of estimators (1000) and an optimal tree depth which is determined by grid search and cross-validation. Specifically, we perform a 5-fold cross-validation and select the depth that yields the best accuracy on the validation set.
-We evaluate our model on a small test set (20\% of the data) to determine whether it overfitted or not.
-We take the most important features learned by the random forest, and we try to interpret them. However, this is not sufficient, as we get only an indication of their magnitude (a positive value), and not whether they affect positively or negatively the result.
+We investigated how people decide when they are presented with a choice. To do this, we trained a classifier (analysing both textual and numerical features) to predict the preferred product (i.e. the one with the highest fan-in) within a group of related products. Afterwards, we interpreted its features and observed what words/fields correlate with the best products. Going into more depth, our model compares pairs of products and emits a binary label that corresponds to the index of the ``winner''. In the \textit{learning to rank} context, such approach is known as the \textit{pairwise approach} \cite{Li:11}.
+Textual features are extracted from the titles (using a tf-idf vectorizer), as they represent a direct  and easy-to-interpret description of the product. For the actual comparison task, we subtract the feature vectors of the two products to produce the feature vector to supply to the classifier. As for the ground truth, provided that the subtraction is $A - B$, we put the label 0 if the winner is A, and 1 if the winner is B. For each sample, we also provide the opposite sample ($B - A$ with the inverted label), so that the classifier learns the commutative property and the classes are perfectly balanced.
+Afterwards, we train a random forest on our data, with a fixed number of estimators (1000) and an optimal tree depth which is determined by grid search and cross-validation. Moreover, we evaluate our model on a small test set (20\% of the data) to determine whether it overfitted or not. The next step is the interpretation, which is done by selecting the most important features learned by the random forest. However, this is not sufficient, as we get only an indication of their magnitude (a positive value), and not whether they affect positively or negatively the result.
 To get an idea of their impact, we select the top 1000 features (i.e. words) in terms of importance, and we use them to train a L2-regularized logistic regressor. By analyzing the weights learned by the latter, we can observe the sign of each feature, which corresponds to the impact (negative or positive) of the feature on the result.
 While this process might seem convoluted, it is the result of many experiments. Initially, we tried to use L1-regularized logistic regression instead of random forests, which is expected to select only a few features (thanks to its sparsity property). Indeed, out of the thousands of features, only a few of them are selected. However, the model tends to overfit some features (e.g. the name of the model of a particular product, such as GT-I9500) in order to maximize the score, and these features are given a huge weight. As a result, it becomes impossible to interpret the model, as the useful features are buried by outliers.
 On the other hand, random forests average the results of many weaks predictors, and are less susceptible to this kind of overfitting. Therefore, our idea is to use random forests to perform feature selection, and interpret the useful features using logistic regression.
 
+We found out that certain words tend to make a product desirable: colors (e.g. black, white), features (e.g. GPS, Bluetooth, LTE, camera), and some brand names (e.g. Apple).
+
+Finally, we carried out the same analysis using numeric features. We tried to predict the best product using the \emph{number of reviews} and \emph{average rating} as features. Surprisingly, we discovered that people tend to choose a product according to the number of reviews, and the role of the actual rating is marginal (unless there is a big discrepancy between the ratings of the two products). We believe that the distribution of the average rating (which concentrates on 4-5 stars for the majority of products) plays an important role.
 
 
 \subsection{Bias in brands}
@@ -369,6 +371,10 @@ Caption of the Table.''  Type the captions of the figures and
 tables below the body, using 11 point text.
 
 \begin{thebibliography}{}
+
+\bibitem[\protect\citename{Amazon:bestsell}]{Amazon:bestsell}
+Amazon.
+\newblock {\em About Amazon Best Sellers Rank.}
 
 \bibitem[\protect\citename{Li}2011]{Li:11}
 Hang Li.
