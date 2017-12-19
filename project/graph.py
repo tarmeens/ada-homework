@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import bisect
+import sys
 
 class ProductGraph:
     
@@ -51,24 +52,27 @@ class ProductGraph:
             
         for i, fan_out in enumerate(self.get_fan_out()):
             self.records[i]['fan_out'] = fan_out
-        
-        for i, comp_id in enumerate(self.get_connected_components(directed=True)):
-            self.records[i]['comp_id_dir'] = comp_id
+            self.records[i]['fan_diff'] = self.records[i]['fan_in'] - fan_out
             
-        for i, comp_id in enumerate(self.get_connected_components(directed=False)):
-            self.records[i]['comp_id_undir'] = comp_id
-            
-        conn_comps = self.extract_connected_components(directed=True)
-        for comp in conn_comps:
-            size = len(comp)
-            for i in comp:
-                self.records[i]['comp_size_dir'] = size
-                
-        conn_comps = self.extract_connected_components(directed=False)
-        for comp in conn_comps:
-            size = len(comp)
-            for i in comp:
-                self.records[i]['comp_size_undir'] = size
+        sys.setrecursionlimit(2000)
+        try:
+            for i, comp_id in enumerate(self.get_connected_components(directed=True)):
+                self.records[i]['comp_id_dir'] = comp_id
+            conn_comps = self.extract_connected_components(directed=True)
+            for comp in conn_comps:
+                size = len(comp)
+                for i in comp:
+                    self.records[i]['comp_size_dir'] = size
+
+            for i, comp_id in enumerate(self.get_connected_components(directed=False)):
+                self.records[i]['comp_id_undir'] = comp_id
+            conn_comps = self.extract_connected_components(directed=False)
+            for comp in conn_comps:
+                size = len(comp)
+                for i in comp:
+                    self.records[i]['comp_size_undir'] = size
+        except RecursionError:
+            pass
                 
         # Build pandas dataframe out of this graph
         self.df = pd.DataFrame(self.records)
