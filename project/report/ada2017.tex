@@ -25,7 +25,8 @@
 
 \setlist[itemize]{leftmargin=*}
 \setlength{\belowcaptionskip}{-8pt}
-\setlist{noitemsep}
+%\setlist{noitemsep}
+\setlist{nosep}
 
 %\setlength\titlebox{5cm}
 
@@ -35,7 +36,7 @@
 % in the camera-ready version and ask you to change it back.
 
 
-\title{Gaining insight into the Amazon product network (temporary title)}
+\title{Exposing the network beneath Amazon}
 
 \author{Dario Pavllo  \\\And
   Mattia Martinelli  \\\And
@@ -46,8 +47,7 @@ Niccolo Sacchi \\}
 \begin{document}
 \maketitle
 \begin{abstract}
-This project aims to find unobserved patterns and insights within the large offer of products on the Amazon website. To conduct our research, we devised an algorithm that builds a graph of such products, where articles with similar characteristics are clustered in an innovative manner. According to our research, these clusters are proven more accurate than the standard Amazon category aggregations, which are human-made and therefore prone to errors. In addition, biases in brands and descriptions are emphasised.
-
+This project aims to find unobserved patterns and insights that could be useful for Amazon's users. To conduct our research, we devise an algorithm that builds a graph of Amazon products, where similar articles are grouped in an innovative manner. We also define a novel metric to find popular products, and we investigate how it is affected by features in the items, such as their title or rating.
 \end{abstract}
 
 \section{Introduction}
@@ -110,11 +110,11 @@ Since we employed an NP-Complete algorithm for our analysis (max-clique extracti
 By visually inspecting the graph, we identified some common structures.
 \begin{itemize}
 	\item \textbf{Accumulators:} these are popular products that have many incoming edges.
-	\item \textbf{Max-cliques:} groups of products that are totally interconnected. In many cases, these products are also accumulators. Cliques represent products that are in direct competition among each other (and it is not really clear which one ``wins"). Note that these competition relations might even comprehend products of the same brand.
+	\item \textbf{Max-cliques:} groups of products that are totally interconnected. In many cases, these products are also accumulators. Cliques represent products that are in direct competition with each other (and it is not really clear which one ``wins"). Note that these competition relations might even comprehend products of the same brand.
 \end{itemize}
 \begin{figure}
 	\centering{}
-	\includegraphics[width=0.5\textwidth]{img/graph.png}
+	\includegraphics[width=0.45\textwidth]{img/graph.png}
 	\caption{Portion of the graph of a category. The stars represent accumulators, whereas the groups represent cliques.}
 	\label{fig:graph}
 \end{figure}
@@ -124,11 +124,11 @@ We wrote algorithms for automatically extracting these patterns and analyzed the
 Now that products are represented as nodes of a directed graph, a new feature becomes available: the product \emph{fan-in} (or \emph{in-degree}), which represents the number of incoming edges in a node. Since an incoming edge indicates that a product has been preferred over another one, such a feature could be exploited to measure the popularity of a product. To validate this metric, we investigated correlations between fan-in and other features already included in the dataset, such as sales rank, average rating, and number of reviews.
 \begin{figure}
 	\centering{}
-	\includegraphics[width=0.5\textwidth]{img/faninCorr.png}
+	\includegraphics[width=0.45\textwidth]{img/faninCorr.png}
 	\caption{Correlations between metrics.}
 	\label{fig:faninCorr}
 \end{figure}
-As showed in \Cref{fig:faninCorr}, the fan-in has a moderate correlation with the number of reviews, and a weak correlation with the sales rank. We also observed a weak correlation between the sales rank and the price, which makes us suppose that people tend to prefer cheaper products. We can conclude that fan-in could be effectively used to measure the \textit{preference} of a product, i.e. how much the product is favoured over the others. In addition, the fan-in shows several advantages over the other features. As mentioned in \Cref{sec:explodatanalysis}, Sales rank is present only in 60\% of the products. Moreover, it has a coarse granularity (i.e. it is computed almost only on macro-category), and it continuously evolves over time (which adds noise to the data). \todo{quote needed}
+As shown in \Cref{fig:faninCorr}, the fan-in has a moderate correlation with the number of reviews, and a weak correlation with the sales rank. We also observed a weak correlation between the sales rank and the price, which makes us suppose that people tend to prefer cheaper products. We can conclude that fan-in could be effectively used to measure the \textit{preference} of a product, i.e. how much the product is favoured over the others. In addition, the fan-in shows several advantages over the other features. As mentioned in \Cref{sec:explodatanalysis}, the sales rank is present only in 60\% of the products. Moreover, it has a coarse granularity (i.e. it is computed only on macro-categories), and it continuously evolves over time (which adds noise to the data).
 
 \subsection{Predicting the best products}
 We investigated how people decide when they are presented with a choice. To do this, we trained a classifier (analysing both textual and numerical features) to predict the preferred product (i.e. the one with the highest fan-in) within a group of related products. Afterwards, we interpreted its features and observed what words/fields correlate with the best products. Going into more depth, our model compares pairs of products and emits a binary label that corresponds to the index of the ``winner''. In the \textit{learning to rank} context, such approach is known as the \textit{pairwise approach} \cite{Li:11}.
@@ -145,7 +145,7 @@ Finally, we carried out the same analysis using numeric features. We tried to pr
 \section{Conclusion}
 \label{sec:conclusion}
 
-During the development of this project we exposed the relations between the products so as to detect the comparable ones in a novel way. By using these relations, we discovered some non-trivial patterns that people follow when presented with different choices. In particular, we found out some of the features that affect the user in the choice of a product, e.g. some specific keywords in the title (e.g. colors), number of reviews, and, most importantly, brand names. We also proposed a suitable metric for comparing products (the fan-in of a node) in particular cases, such as inside cliques.
+During the development of this project we exposed the relations between products so as to detect the comparable ones in a novel way. By using these relations, we discovered some non-trivial patterns that people follow when presented with different choices. In particular, we found out some of the features that affect the user in the choice of a product, e.g. some specific keywords in the title (e.g. colors), number of reviews, and, most importantly, brand names. We also proposed a suitable metric for comparing products (the fan-in of a node) that also works in special cases, such as inside cliques.
 
 Most importantly, we answered some interesting research questions:
 \begin{itemize}
@@ -154,7 +154,7 @@ Most importantly, we answered some interesting research questions:
 	\item By analyzing the text in the titles, we can weakly predict the preferred product in a pair of competing products. Despite the accuracy being only slightly better than random, we detected some keywords that correlate with the best product, and these could provide useful suggestions for vendors. Additionally, we observed that users tend to buy products that have many reviews, and give less weight to the average rating (which presents a skewed distribution).
 	\item Brand names indeed influence people's choices. However, we cannot know whether this is due to popularity and advertising reasons, or due to the fact that famous brands have better resources and manufacture products that are superior. Both of them might be partially true.
 \end{itemize}
-To sum up, we believe that the insights that we have found on the Amazon graph could prove useful for vendors that want to maximize the reach of their products.
+To sum up, we believe that the insights that we have found on the Amazon graph could prove useful for both clients and vendors that want to maximize the reach of their products.
 
 \begin{thebibliography}{}
 
