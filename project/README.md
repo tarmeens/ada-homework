@@ -70,3 +70,10 @@ As a guideline until milestone 3, we aim to accomplish the following goals:
 - Investigate the cliques to gain useful insights, as defined in milestone 1. In particular, we want to extract recurrent patterns from the graph.
 - Obtain the best metric for evaluating a product, among average rating, sales rank, ingoing edges, or other potential metrics that we might discover in the future.
 - Now that we have the pipeline in place, try to answer the open questions in the initial proposal.
+
+# Milestone 3 update (19/12/2017)
+### Contributions
+Mattia Martinelli (mattia.martinelli@epfl.ch): graph analysis, report and final presentation.
+Dario Pavllo (dario.pavllo@epfl.ch): graph algorithm conception and implementation, graph analysis and report.
+Niccolò Sacchi (niccolo.sacchi@epfl.ch): dataset analysis and cleaning, correlation analysis, report, visualization.
+
