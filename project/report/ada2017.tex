@@ -32,12 +32,9 @@
 
 \title{Gaining insight into the Amazon product network (temporary title)}
 
-\author{Dario Pavllo \\
-  {\tt dario.pavllo@epfl.ch} \\\And
-  Second Author \\
-  {\tt mattia.artinelli@epfl.ch} \\\And
-Third Author \\
-{\tt niccolo.sacchi@epfl.ch} \\}
+\author{Dario Pavllo  \\\And
+  Mattia Martinelli  \\\And
+Niccolo Sacchi \\}
 
 \date{}
 
@@ -105,13 +102,17 @@ We verified our assumption that the graph is sparse. As a matter of fact, a full
 
 
 \subsection{Graph insights}
-\todo[inline]{patterns (accumulators, cliques=competing products), prove that cliques represent competing products}
-\todo[inline]{What do cliques represent? some of them are just same product with different colours, or same brand in clique}
 By visually inspecting the graph, we identified some common structures.
 \begin{itemize}
 	\item \textbf{Accumulators:} these are popular products that have many incoming edges.
 	\item \textbf{Max-cliques:} groups of products that are totally interconnected. In many cases, these products are also accumulators. Cliques represent products that are in direct competition among each other (and it is not really clear which one ``wins"). Note that these competition relations might even comprehend products of the same brand.
 \end{itemize}
+\begin{figure}
+	\centering{}
+	\includegraphics[width=0.5\textwidth]{img/graph.png}
+	\caption{Graph.}
+	\label{fig:graph}
+\end{figure}
 We wrote algorithms for automatically extracting these patterns and analyzed them to make sure that they were coherent. In particular, for max-cliques, we ran the extraction algorithm on the full graph and verified whether all the products in a clique belong to the same category. This is true in 70\% of cases. Afterwards, we repeated the analysis on strongly connected components and discovered that many products are assigned to the wrong category in a detectable way. We also analyzed some cliques by hand and observed some recurrent patterns: in some cases, they contain the same product in different variations (e.g. color); in other cases, they represent different products from the same manufacturer, and, finally, they can also contain different products from different manufacturers. Since the data appeared to be very consistent, we decided to adopt it without further cleaning.
 
 \subsection{Methodology}
