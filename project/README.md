@@ -43,7 +43,7 @@ Another example of a 4-clique:
 
 The picture below represents an ideal scenario. It can be seen that cliques, despite being very restrictive, provide a good rule for inferring these clusters of related/competing products. Other rules such as strongly connected components would create clusters that are too big to be meaningful.
 
-![Sample product graph](productGraph.png)
+![Sample product graph](imgs/productGraph.png)
 
 # A list of internal milestones up until project milestone 2
 - Define the rules for creating the graph (i.e. the influence of each relation type).
