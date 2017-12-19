@@ -44,7 +44,6 @@ Third Author \\
 \begin{document}
 \maketitle
 \begin{abstract}
-\todo{NB: this abstract is just a pure example}
 This project aims to find unobserved patterns and insights within the large offer of products on the Amazon website. To conduct our research, we devised an algorithm that builds a graph of such products, where articles with similar characteristics are clustered in an innovative manner. According to our research, these clusters are proven more accurate than the standard Amazon category aggregations, which are human-made and therefore prone to errors. In addition, biases in brands and descriptions are emphasised.
 
 \end{abstract}
@@ -59,13 +58,13 @@ The rest of the report is organised as follows: \Cref{sec:datastruct} briefly ex
 \label{sec:datastruct}
 We have been provided with a dataset of Amazon products, which consists of two JSON files: 
 \begin{itemize}
-	\item \textit{metadata}: contains information related to the products, such as their unique ID (\textit{ASIN}), category, description, \textit{Sales rank}\todo{reference?}, brand, price, and relations with other items. Such relations, which are of fundamental importance for building our graph, indicate how items are bought and visualized together. The size of the file is 9.81 GB (uncompressed).
+	\item \textit{metadata}: contains information related to the products, such as their unique ID (\textit{ASIN}), category, description, \textit{sales rank}, brand, price, and relations with other items. Such relations, which are of fundamental importance for building our graph, indicate how items are bought and visualized together. The size of the file is 9.81 GB (uncompressed).
 	\item \textit{reviews}: contains ratings and reviews associated to each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed).
 \end{itemize}
 
 \section{Dataset preprocessing}
 \label{sec:datapreprocessing}
-The dataset, due to its large size, could not be handled directly using Pandas. It has been processed using PySpark, first on the cluster (especially for \textit{reviews}) and then locally. While it may seem inappropriate at first, using Spark in local mode is indicated for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores and spills to disk intermediate results that cannot fit in main memory. \todo{ reference?}
+The dataset, due to its large size, could not be handled directly using Pandas. It has been processed using PySpark, first on the cluster (especially for \textit{reviews}) and then locally. While it may seem inappropriate at first, using Spark in local mode is indicated for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores and spills to disk intermediate results that cannot fit in main memory. 
 
 Since the text content of \textit{reviews} was not necessary for our  analysis, for each product, we extracted average rating, number of reviews, and their \textit{helpfulness} score. These fields have been then merged with \textit{metadata}.
 
@@ -73,16 +72,18 @@ We noticed that products were distributed over a wide set of categories, therefo
 
 \section{Exploratory data analysis}
 \label{sec:explodatanalysis}
-We investigated what fields could be useful for our project, analysing missing data, feature distribution and correlations.
-The analyses have been performed on the 25\% of the dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics. \todo{remove}
+We investigated what fields could exploited, analysing missing data, feature distributions and correlations.
 \subsection{Missing data}
-\todo[inline]{put pictures}
-From Picture ..., we can observe that the quantity of missing entries significantly varies among the dataset fields. ASIN and category are always present by definition. In addition, almost all articles have at least one review. On the other hand, Sale rank and brand are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
+We observed that the quantity of missing entries significantly varies among the dataset fields. \textit{ASIN} and \textit{category} are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{sales rank} and \textit{brand} are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
 \subsection{Feature distribution}
-\todo[inline]{put a picture}
-Picture .. shows useful insights on the data.  It can be seen that the average rating tends to be high. The distribution of the number of reviews for each article is heavy-tailed (i.e. the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
+\begin{figure}[h]
+	\centering{}
+	\includegraphics[width=0.47\textwidth]{img/avgReviews.png}
+	\caption{Distribution of the \textit{average rating} field.}
+	\label{fig:avgdist}
+\end{figure}
+\Cref{fig:avgdist} shows that ratings tend to be high. This evidence suggests that they may be not a good metric to evaluate the popularity of a product. The distribution of the number of reviews for each article is heavy-tailed (i.e. the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
 \subsection{Correlation analysis}
-\todo[inline]{put a picture}
 We have investigated correlations among price, average rating and Sales rank. The analysis has been performed on whole dataset and not on the single categories independently. 
 From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
@@ -369,6 +370,10 @@ Caption of the Table.''  Type the captions of the figures and
 tables below the body, using 11 point text.
 
 \begin{thebibliography}{}
+
+\bibitem[\protect\citename{Amazon:bestsell}]{Amazon:bestsell}
+Amazon.
+\newblock {\em About Amazon Best Sellers Rank.}
 
 \bibitem[\protect\citename{Li}2011]{Li:11}
 Hang Li.
