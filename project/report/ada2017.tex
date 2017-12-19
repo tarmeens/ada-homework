@@ -20,6 +20,7 @@
 \usepackage{url}
 \usepackage{latexsym}
 \usepackage{todonotes}
+\usepackage[nameinlink]{cleveref}
 
 %\setlength\titlebox{5cm}
 
@@ -55,67 +56,77 @@ We also aim to identify patterns in the products. Do brands affect popularity an
 
 
 \section{Dataset structure}
-We have been provided with a dataset of Amazon products. In particular, the dataset consists of two JSON files: 
+\label{sec:datastruct}
+We have been provided with a dataset of Amazon products, which consists of two JSON files: 
 \begin{itemize}
-	\item \textit{metadata}: which contains information related to the products. The file contains information about the products, such as their unique ID, description, price and the asin of related products. The size of the file is 9.81 GB (uncompressed, json format).
-	\item \textit{reviews}: which contains the reviews and the ratings associated to each product. The file contains reviews and ratings associated with each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed, json format).
+	\item \textit{metadata}: contains information related to the products, such as their unique ID (\textit{ASIN}), category, description, \textit{Sales rank}\todo{reference?}, brand, price, and relations with other items. Such relations, which are of fundamental importance for building our graph, indicate how items are bought and visualized together. The size of the file is 9.81 GB (uncompressed).
+	\item \textit{reviews}: contains ratings and reviews associated to each product, as well as the helpfulness of each review. The size of the file is approximately 87 GB (uncompressed).
 \end{itemize}
-\subsection{Metadata}
 
 \section{Dataset preprocessing}
-The dataset, due to its large size, could not be easily managed directly using Pandas. Therefore, it has been processed using PySpark, first on the cluster (especially for the reviews dataset) and then locally. While it may seem inappropriate at first, using Spark in local makes sense for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores, and spills to disk intermediate results that cannot fit in main memory.
-\todo[inline]{merge reviews with metadata}
-\todo[inline]{5 categories selction}
+The dataset, due to its large size, could not be handled directly using Pandas. It has been processed using PySpark, first on the cluster (especially for \textit{reviews}) and then locally. While it may seem inappropriate at first, using Spark in local mode is indicated for medium-sized datasets (like the metadata one), as it automatically parallelizes jobs using all cores and spills to disk intermediate results that cannot fit in main memory. \todo{ reference?}
+
+Since the text content of \textit{reviews} was not necessary for our  analysis, we extracted, for each product, average rating and number of reviews with their \textit{helpfulness} score. These fields have been then merged with \textit{metadata}.
+
+We noticed that products were distributed over a wide set of categories, therefore, we decided to extract only the most relevant ones. We excluded categories in which purchase decision tends to depend more on people's personal preferences, rather than on an objective evaluation. Examples of such categories are \textit{Music}, \textit{Clothes} and \textit{Books}. We also decided to include only categories with a relatively large number of products. As a result, we created a with lighter dataset using only five categories:  \textit{Electronics}, \textit{Cell Phones \& Accessories}, \textit{Automotive}, \textit{Tools \& Home Improvement}, and \textit{Musical Instruments}. 
 
 \section{Exploratory data analysis}
-\todo[inline]{categories, missing data, feature distribution and correlation}
-The analyses have been performed on the 25\% of the \todo{reduced} dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics.
+We investigated what fields could be useful for our project, analysing missing data, feature distribution and correlations.
+The analyses have been performed on the 25\% of the dataset. This sampled subset is still considerably large, therefore, we can assume that it reflects the true statistics. \todo{remove}
 \subsection{Missing data}
 \todo[inline]{put pictures}
-From Picture ..., we can observe that results significantly varies among the dataset fields. ID (\textit{asin}) and categories are always present by definition. In addition, almost all articles have at least one review. On the other hand, \textit{SaleRank} and \textit{Brand} are missing in about 60\% of cases. Other fields are in most cases present in the dataset, with a missing ratio lower than 30\%.
+From Picture ..., we can observe that the quantity of missing entries significantly varies among the dataset fields. ASIN and category are always present by definition. In addition, almost all articles have at least one review. On the other hand, Sale rank and brand are missing in about 60\% of cases. The remaining fields are overall present in the dataset, with a missing ratio lower than 30\%.
 \subsection{Feature distribution}
 \todo[inline]{put a picture}
-Picture .. shows useful insights on the data.  It can be seen that the average ratings tend to be high. The distribution of the number of reviews for each article is heavy-tailed (the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
+Picture .. shows useful insights on the data.  It can be seen that the average rating tends to be high. The distribution of the number of reviews for each article is heavy-tailed (i.e. the mean is much larger than the median). Most reviews are regarded as helpful (50\% of the articles have an helpfulness percentage greater than 90\%), therefore, it is reasonable to consider them with good confidence.
 \subsection{Correlation analysis}
 \todo[inline]{put a picture}
-We have investigated correlations among price, review rating and sales rank. The analysis has been performed on whole subset dataset, without exterminating the single categories independently. 
+We have investigated correlations among price, average rating and Sales rank. The analysis has been performed on whole dataset and not on the single categories independently. 
 From Figure .... the correlation coefficients do not seem to be significant. However, some assumption could be asserted. As the price increases, the ratings tend to have lower variance and higher mean. In other words, more expensive products have averagegly higher ratings.
 As the price increases, the sales rank tends to be lower (i.e. better). Costly products may be regarded as superior by people. 
-\todo[inline]{The analysis should be redone in the cliques}
 
 \section{Graph analysis}
 \todo[inline]{This should be the core part of the project. Why have we decided to cluster the products with our algorithm? How do we do it? Explain in details how links are created, and what solutions we have tried. Mention how the algorithm works and its complexity. Validate the result, prove that cliques effectlively represent competitive products. Correct assumption: sparse graph.}
-In order to analyse patterns and gain insights in the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}, but without using directly any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to numerically compare two products to decide which one is better. We understood that before being able to comparing two products we had to cluster them in competing products as it would not make sense to compare two products with very different characteristics, for example, a cheap phone with a very expensive one. 
+In order to analyse patterns and gain insights into the dataset, we have devised an algorithm to cluster products with similar characteristics, i.e. \textit{competing products}, but without using directly any explicit characteristic (e.g. nor price nor average ratings). In particular, our first goal was to be able to numerically compare two products to decide which one is better. We understood that before being able to comparing two products we had to cluster them in competing products as it would not make sense to compare two products with very different characteristics, for example, a cheap phone with a very expensive one. 
+
+We built a network of products using the relations between items provided in the dataset. In general terms, such relations have been collected by analysing the behaviour of Amazon's users, i.e. what products they buy or visualise together. We assumed that these relations could reflect meaningful patterns, as users tend to compare similar or related products.
+
 \subsection{Graph structure}
-The dataset is transformed into a graph of relations between products, where the vertices represent products, and edges represent competitions between products. In details: we add an edge from product A to product B if clients buy B after viewing A (direct competition), and
-we remove an edge between A and B if A and B are frequently bought together (no competition). A way of expressing this in more formal terms is with max-cliques, that is, finding sets of vertices that are totally interconnected.
-\todo{augmentation with fan-in/out, connected components}
-\todo{we did not used "also viewed"}
-\todo{cartsimilarities}
-The algorithms that we are going to use (e.g. max-cliques) are NP-Complete, and will surely benefit from a clever splitting of the data.
-As a first pre-processing step, we build our graph data structure using an efficient layout: adjacency lists indexed by numbers, and not strings. This representation is suitable because the graph is sparse.
-In previous experiments, we tried to employ the also viewed relation, with mixed results. This relation produces a graph that is too dense to give meaningful results. Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and does not actually represent a graph relation.
+The dataset has been transformed into graphs of relations between products, where vertices represent products, and edges represent competitions between products. To assure a coherent result, a graph includes only products of the same category. In details,  we built the graph such that an edge from product A to product B is added if clients \textbf{buy} B after viewing A (\textit{buy after viewing} relation), but the edge between A and B is removed if A and B are frequently bought together (\textit{bought together} relation). The former means direct competition, i.e. an article has been preferred over another, while the latter means no competition, i.e. the two articles are complementary (e.g. a cellphone and a cover).
+
+In previous experiments, we tried to build the graph by adding edges between products that are viewed together (\textit{also viewed} relation). This relation does not imply that any of the products has been actually bought, and it is produces a graph that is too dense to give meaningful results. Additionally, we believe that the also viewed relation is generated by Amazon's recommender system according to users' preferences, and it does not actually represent a graph relation. \todo{quote needed}
+
+We could verify that the graph is sparse, which was also an important assumption. As a matter of fact, a fully connected graph would produce spurious results that could be difficult to interpret.
+
+We used to graph to analyse connected components, in particular max-cliques.
+A max-clique is a set of totally interconnected nodes, which, in our scenario, represent products that are in direct competition among each other (and it is not really clear which "wins"). Note that these competition relations might even comprehend products of the same brand: this could turn out to be an interesting tools for vendors.
+\todo[inline]{should cliques and algorithm deserve more space here?}
+\todo{connected components @ dario}
+\todo{cartsimilarities @dario}
+
 
 \subsection{Graph insights}
-\todo{stats (lot unconnected components, correlations)}
-\todo{patterns (accumulators, cliques=competing products)}
-\todo{Wrong categories}
+We could observe that the graph is weakly connected.
+\todo[inline]{patterns (accumulators, cliques=competing products), prove that cliques represent competing products}
+\todo[inline]{Wrong categories}
 
 \subsection{Methodology}
-\todo{why fan-in? it is more constant in time! salesrank is not. arguments in favor of fan-in ... e.g. it correlates with sales rank}
-\todo{best product=product with highest fan-in. Based on the direction of the edge we can predict which is the one with the highest fan-in}
+With products represented as nodes of a directed graph, a new feature becomes available: the product \textit{fan-in}, that is, how many incoming edges are associated to each node. Since an incoming edge indicates that a given product has been bought instead of another one, such new feature could be exploited to measure the popularity of a product.
+
+We investigated correlations between fan-in and other features already included in the dataset, and we could observe a positive correspondence between fan-in and Sales rank and number of review. However, fan-in tends to be more stable over time, since indicators such Sales rank are computer over a shorted period of time. \todo{quote needed}
+\todo[inline]{best product=product with highest fan-in. Based on the direction of the edge we can predict which is the one with the highest fan-in}
 
 \subsection{Predicting the best products}
-\todo{machine learning for predicting the best product (highest fan-in) from text, price, reviews, average rating}
-\todo{results on non-competing products (outside the cliques)}
-\todo{results on competing products (inside the cliques), as expected, are worse}
+\todo[inline]{machine learning for predicting the best product (highest fan-in) from text, price, reviews, average rating}
+\todo[inline]{results on non-competing products (outside the cliques)}
+\todo[inline]{results on competing products (inside the cliques), as expected, are worse}
 
 \subsection{Bias in brands}
-\todo{herding effect with number of reviews}
+\todo[inline]{herding effect with number of reviews}
 
 \section{Conclusion}
 
-\todo{figures: 
+\todo[inline]{figures: 
 rating distribution, 
 correlations (between price, rating, salesrank,...) and with fan-in?, 
 graph (cliques and accumulators),
