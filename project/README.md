@@ -1,4 +1,4 @@
-# Gaining insights into the Amazon product network
+# Exposing the network beneath Amazon
 
 # Abstract
 Buying from huge e-commerce websites such as Amazon has many advantages, but, paradoxically, users are often confused by the vast variety of products.
